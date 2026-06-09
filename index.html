@@ -1,0 +1,699 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="健康日誌">
+<meta name="theme-color" content="#2D6A4F">
+<title>健康日誌</title>
+<style>
+:root {
+  --g1: #2D6A4F;
+  --g2: #52B788;
+  --g3: #B7E4C7;
+  --g4: #D8F3DC;
+  --cream: #F7F5F0;
+  --ink: #1A1D1B;
+  --ink2: #4A5248;
+  --ink3: #8A9490;
+  --warn: #E63946;
+  --warn2: #FEE8EA;
+  --gold: #C9920A;
+  --gold2: #FEF3D0;
+  --white: #FFFFFF;
+  --r: 16px;
+  --rs: 10px;
+  --sh: 0 2px 12px rgba(45,106,79,0.09);
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{font-family:-apple-system,'PingFang TC','Noto Sans TC',sans-serif;background:var(--cream);color:var(--ink);min-height:100vh;max-width:480px;margin:0 auto;padding-bottom:20px}
+
+/* Header */
+.hdr{background:var(--g1);color:#fff;padding:16px 20px 14px;position:sticky;top:0;z-index:100;box-shadow:0 2px 8px rgba(0,0,0,0.15)}
+.hdr-row{display:flex;justify-content:space-between;align-items:center}
+.hdr h1{font-size:19px;font-weight:800;letter-spacing:.3px}
+.date-nav{display:flex;align-items:center;gap:10px;margin-top:10px}
+.dnav-btn{background:rgba(255,255,255,0.18);border:none;color:#fff;width:30px;height:30px;border-radius:50%;font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.date-lbl{flex:1;text-align:center;font-size:14px;font-weight:600;cursor:pointer}
+.today-pill{background:rgba(255,255,255,0.22);border:none;color:#fff;padding:3px 10px;border-radius:20px;font-size:12px;cursor:pointer;font-weight:600}
+
+/* Nav */
+.nav{display:flex;gap:4px;padding:12px 14px 0;background:var(--cream)}
+.nav-btn{flex:1;border:none;background:var(--white);border-radius:var(--rs);padding:8px 2px 7px;font-size:11px;font-weight:700;color:var(--ink3);cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:2px;box-shadow:var(--sh);transition:all .15s}
+.nav-btn .ico{font-size:17px}
+.nav-btn.on{background:var(--g1);color:#fff}
+
+/* Views */
+.view{display:none;padding:12px 14px;flex-direction:column;gap:12px}
+.view.on{display:flex}
+
+/* Card */
+.card{background:var(--white);border-radius:var(--r);padding:16px;box-shadow:var(--sh)}
+.ctitle{font-size:10px;font-weight:800;letter-spacing:1.8px;text-transform:uppercase;color:var(--ink3);margin-bottom:12px}
+
+/* Import hero button */
+.import-hero{background:var(--g1);color:#fff;border:none;border-radius:var(--r);padding:18px;width:100%;font-size:16px;font-weight:800;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;box-shadow:0 4px 16px rgba(45,106,79,0.3);letter-spacing:.3px}
+.import-hero:active{opacity:.88}
+.import-hero .ico{font-size:22px}
+
+/* Textarea */
+.jtx{width:100%;background:var(--cream);border:1.5px solid var(--g3);border-radius:var(--rs);padding:10px 12px;font-size:12px;font-family:'Courier New',monospace;color:var(--ink);min-height:90px;outline:none;resize:vertical}
+.jtx:focus{border-color:var(--g2)}
+
+/* Buttons */
+.btn{background:var(--g1);color:#fff;border:none;border-radius:var(--rs);padding:10px 18px;font-size:14px;font-weight:700;cursor:pointer;transition:opacity .15s}
+.btn:active{opacity:.82}
+.btn.sec{background:var(--white);color:var(--g1);border:1.5px solid var(--g3)}
+.btn.full{width:100%;text-align:center}
+.btn.warn{background:var(--warn)}
+.row{display:flex;gap:8px}
+
+/* Stats grid */
+.sgrid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.sbox{background:var(--g4);border-radius:var(--rs);padding:12px 10px;text-align:center}
+.sbox.bad{background:var(--warn2)}
+.sbox.gold{background:var(--gold2)}
+.sval{font-size:28px;font-weight:900;color:var(--g1);line-height:1}
+.sbox.bad .sval{color:var(--warn)}
+.sbox.gold .sval{color:var(--gold)}
+.sunit{font-size:10px;color:var(--ink3);margin-top:2px}
+.slbl{font-size:11px;color:var(--ink2);margin-top:3px;font-weight:700}
+
+/* Progress */
+.prow{margin-bottom:9px}
+.prow:last-child{margin-bottom:0}
+.phdr{display:flex;justify-content:space-between;margin-bottom:4px}
+.pname{font-size:12px;font-weight:700;color:var(--ink2)}
+.pnum{font-size:11px;color:var(--ink3)}
+.ptrack{height:7px;background:var(--g4);border-radius:4px;overflow:hidden}
+.pfill{height:100%;border-radius:4px;background:var(--g2);transition:width .4s ease}
+.pfill.over{background:var(--warn)}
+
+/* Alert */
+.alert{border-radius:var(--rs);padding:11px 13px;font-size:13px;line-height:1.6;margin-top:4px}
+.alert.g{background:var(--g4);color:var(--g1)}
+.alert.w{background:var(--warn2);color:var(--warn)}
+.alert.a{background:var(--gold2);color:var(--gold)}
+
+/* Food & exercise items */
+.fitem,.eitem{display:flex;align-items:center;gap:6px;padding:7px 9px;border-radius:8px;margin-bottom:4px;font-size:13px}
+.fitem{background:var(--g4)}
+.fitem.ng{background:var(--warn2)}
+.eitem{background:var(--gold2)}
+.fname{flex:1;color:var(--ink)}
+.fkcal{font-weight:700;color:var(--ink2);white-space:nowrap}
+.fdel{background:none;border:none;color:var(--ink3);font-size:17px;cursor:pointer;padding:0 0 0 4px;line-height:1}
+.ng-tag{font-size:9px;background:var(--warn);color:#fff;padding:1px 5px;border-radius:4px;margin-left:4px;vertical-align:middle}
+.meal-hdr{display:flex;justify-content:space-between;margin:10px 0 5px}
+.meal-hdr:first-child{margin-top:0}
+.mname{font-size:12px;font-weight:800;color:var(--ink2)}
+.mkcal{font-size:12px;font-weight:800;color:var(--g1)}
+
+/* Weight */
+.wbig{display:flex;align-items:baseline;gap:5px;margin-bottom:6px}
+.wnum{font-size:50px;font-weight:900;color:var(--g1);line-height:1}
+.wunit{font-size:17px;color:var(--ink3);font-weight:600}
+.wdiff{font-size:12px;padding:2px 8px;border-radius:20px;font-weight:700}
+.wdiff.dn{background:var(--g4);color:var(--g1)}
+.wdiff.up{background:var(--warn2);color:var(--warn)}
+
+/* Input */
+.ifield{flex:1;background:var(--cream);border:1.5px solid var(--g3);border-radius:var(--rs);padding:9px 12px;font-size:14px;color:var(--ink);outline:none}
+.ifield:focus{border-color:var(--g2)}
+select.ifield{cursor:pointer;appearance:none}
+
+/* History */
+.hitem{display:flex;align-items:center;gap:8px;padding:9px 0;border-bottom:1px solid var(--g4);cursor:pointer}
+.hitem:last-child{border-bottom:none}
+.hdate{font-size:11px;color:var(--ink3);width:45px;flex-shrink:0}
+.hbars{flex:1}
+.hkcal{font-size:12px;font-weight:800;color:var(--ink2);width:60px;text-align:right}
+.minibar{height:6px;background:var(--g4);border-radius:3px;overflow:hidden;margin-bottom:2px}
+.minifill{height:100%;border-radius:3px;background:var(--g2)}
+.minifill.over{background:var(--warn)}
+
+/* Trend */
+.titem{display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid var(--g4)}
+.titem:last-child{border-bottom:none}
+.tdate{font-size:11px;color:var(--ink3);width:40px}
+.tbar{flex:1;height:6px;background:var(--g4);border-radius:3px;overflow:hidden}
+.tbarfill{height:100%;background:var(--g2);border-radius:3px}
+.tw{font-size:12px;font-weight:800;color:var(--ink2);width:52px;text-align:right}
+
+/* Empty */
+.empty{text-align:center;padding:24px 16px;color:var(--ink3);font-size:13px;line-height:1.8}
+.eico{font-size:36px;margin-bottom:6px}
+
+/* Toast */
+.toast{position:fixed;bottom:30px;left:50%;transform:translateX(-50%);background:var(--g1);color:#fff;padding:10px 20px;border-radius:30px;font-size:13px;font-weight:700;z-index:999;opacity:0;transition:opacity .25s;pointer-events:none;white-space:nowrap}
+.toast.show{opacity:1}
+
+/* Settings */
+.set-row{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--g4)}
+.set-row:last-child{border-bottom:none}
+.set-lbl{font-size:13px;color:var(--ink2);font-weight:600}
+.set-val{font-size:13px;color:var(--g1);font-weight:700}
+.preview-hint{font-size:12px;color:var(--ink3);margin-top:4px}
+</style>
+</head>
+<body>
+
+<div class="hdr">
+  <div class="hdr-row">
+    <h1>🌿 健康日誌</h1>
+    <button class="today-pill" onclick="goToday()">今天</button>
+  </div>
+  <div class="date-nav">
+    <button class="dnav-btn" onclick="changeDay(-1)">‹</button>
+    <div class="date-lbl" id="dateLbl" onclick="goToday()"></div>
+    <button class="dnav-btn" onclick="changeDay(1)">›</button>
+  </div>
+</div>
+
+<div class="nav">
+  <button class="nav-btn on" onclick="goTab('today',this)"><span class="ico">📊</span>今日</button>
+  <button class="nav-btn" onclick="goTab('import',this)"><span class="ico">📥</span>匯入</button>
+  <button class="nav-btn" onclick="goTab('food',this)"><span class="ico">🍱</span>飲食</button>
+  <button class="nav-btn" onclick="goTab('move',this)"><span class="ico">🏃</span>運動</button>
+  <button class="nav-btn" onclick="goTab('weight',this)"><span class="ico">⚖️</span>體重</button>
+  <button class="nav-btn" onclick="goTab('hist',this)"><span class="ico">📈</span>歷史</button>
+</div>
+
+<!-- TODAY -->
+<div class="view on" id="v-today">
+  <div class="card">
+    <div class="ctitle">今日總覽</div>
+    <div class="sgrid" id="sgrid"></div>
+  </div>
+  <div class="card">
+    <div class="ctitle">目標進度</div>
+    <div id="progs"></div>
+  </div>
+  <div class="card" id="alertCard" style="display:none">
+    <div class="ctitle">今日建議</div>
+    <div id="alertBody"></div>
+  </div>
+  <div class="card" id="ngCard" style="display:none">
+    <div class="ctitle">⚠️ NG 食物</div>
+    <div id="ngBody"></div>
+  </div>
+</div>
+
+<!-- IMPORT -->
+<div class="view" id="v-import">
+  <button class="import-hero" onclick="focusImport()">
+    <span class="ico">📥</span> 貼上 Gem 資料並匯入
+  </button>
+  <div class="card">
+    <div class="ctitle">貼上 Gemini Gem 回覆</div>
+    <textarea class="jtx" id="gemTx" placeholder="將 Gemini Gem 的完整回覆貼在這裡。
+
+系統會自動找到 ===RECORD=== 後面的 JSON，前面的教練分析內容會保留在 Gem 裡，這裡只需要貼上整段文字即可。
+
+支援：食物 / 體重 / 運動"></textarea>
+    <div class="preview-hint" id="parseHint"></div>
+    <div style="margin-top:10px">
+      <button class="btn full" onclick="doImport()">✓ 確認匯入</button>
+    </div>
+  </div>
+  <div class="card">
+    <div class="ctitle">格式說明</div>
+    <div style="font-size:12px;color:var(--ink3);line-height:1.8">
+      Gem 回覆最後須包含：<br>
+      <code style="background:var(--cream);padding:2px 5px;border-radius:4px;font-size:11px">===RECORD===</code><br>
+      後面接 JSON，系統自動解析。<br><br>
+      支援三種 type：<br>
+      <b style="color:var(--g1)">food</b> · <b style="color:var(--g1)">exercise</b> · <b style="color:var(--g1)">weight</b>
+    </div>
+  </div>
+</div>
+
+<!-- FOOD -->
+<div class="view" id="v-food">
+  <div class="card">
+    <div class="ctitle">手動新增食物</div>
+    <div style="display:flex;flex-direction:column;gap:8px">
+      <select class="ifield" id="mealSel">
+        <option>早餐</option><option>午餐</option><option>晚餐</option><option>點心</option>
+      </select>
+      <input class="ifield" id="fName" placeholder="食物名稱">
+      <div class="row">
+        <input class="ifield" id="fCal" placeholder="熱量 kcal" type="number">
+        <input class="ifield" id="fPro" placeholder="蛋白質 g" type="number">
+      </div>
+      <div class="row">
+        <input class="ifield" id="fFat" placeholder="脂肪 g" type="number">
+        <input class="ifield" id="fCarb" placeholder="碳水 g" type="number">
+      </div>
+      <button class="btn full" onclick="addFoodManual()">+ 新增</button>
+    </div>
+  </div>
+  <div class="card">
+    <div class="ctitle">今日飲食紀錄</div>
+    <div id="foodLog"></div>
+  </div>
+</div>
+
+<!-- EXERCISE -->
+<div class="view" id="v-move">
+  <div class="card">
+    <div class="ctitle">新增運動</div>
+    <div style="display:flex;flex-direction:column;gap:8px">
+      <select class="ifield" id="exType">
+        <option value="快走">快走（4.2 kcal/分鐘）</option>
+        <option value="重訓">重訓（5.0 kcal/分鐘）</option>
+        <option value="慢跑">慢跑（8.3 kcal/分鐘）</option>
+        <option value="游泳">游泳（7.5 kcal/分鐘）</option>
+        <option value="騎腳踏車">騎腳踏車（5.5 kcal/分鐘）</option>
+        <option value="有氧舞蹈">有氧舞蹈（6.0 kcal/分鐘）</option>
+        <option value="其他">其他（4.0 kcal/分鐘）</option>
+      </select>
+      <div class="row">
+        <input class="ifield" id="exMin" placeholder="幾分鐘" type="number">
+        <button class="btn" onclick="addEx()">+ 新增</button>
+      </div>
+      <div id="exPreview" style="font-size:12px;color:var(--ink3)"></div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="ctitle">今日運動紀錄</div>
+    <div id="exLog"></div>
+  </div>
+</div>
+
+<!-- WEIGHT -->
+<div class="view" id="v-weight">
+  <div class="card">
+    <div class="ctitle">今日體重</div>
+    <div id="wDisplay"></div>
+    <div style="display:flex;flex-direction:column;gap:8px;margin-top:14px">
+      <div class="row">
+        <input class="ifield" id="wIn" placeholder="體重 kg" type="number" step="0.1">
+        <input class="ifield" id="bfIn" placeholder="體脂% (選填)" type="number" step="0.1">
+      </div>
+      <button class="btn full" onclick="saveW()">儲存體重</button>
+    </div>
+  </div>
+  <div class="card">
+    <div class="ctitle">體重趨勢（近14天）</div>
+    <div id="wTrend"></div>
+  </div>
+</div>
+
+<!-- HISTORY -->
+<div class="view" id="v-hist">
+  <div class="card">
+    <div class="ctitle">近期紀錄</div>
+    <div id="histList"></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ===== PROFILE =====
+const P = {
+  cal_target: 1380,
+  pro_target: 90,
+  target_w: 52,
+  start_w: 56,
+  ex_rate: { 快走:4.2, 重訓:5.0, 慢跑:8.3, 游泳:7.5, 騎腳踏車:5.5, 有氧舞蹈:6.0, 其他:4.0 }
+};
+
+// ===== DATE =====
+let curDate = today();
+function today(){ return new Date().toISOString().slice(0,10) }
+function fmtDate(d){
+  const o = new Date(d+'T12:00:00');
+  const days=['日','一','二','三','四','五','六'];
+  const t = today(), yd = prevDay(t);
+  const tag = d===t?' · 今天':d===yd?' · 昨天':'';
+  return `${o.getMonth()+1}/${o.getDate()}（${days[o.getDay()]}）${tag}`;
+}
+function prevDay(d){ const o=new Date(d+'T12:00:00'); o.setDate(o.getDate()-1); return o.toISOString().slice(0,10) }
+function addDays(d,n){ const o=new Date(d+'T12:00:00'); o.setDate(o.getDate()+n); return o.toISOString().slice(0,10) }
+function last14(){ const r=[]; let d=today(); for(let i=0;i<14;i++){ r.unshift(d); d=prevDay(d); } return r }
+
+function changeDay(n){
+  const next = addDays(curDate,n);
+  if(next>today()) return;
+  curDate=next; updateDateLbl(); renderAll();
+}
+function goToday(){ curDate=today(); updateDateLbl(); renderAll(); }
+function updateDateLbl(){ document.getElementById('dateLbl').textContent = fmtDate(curDate); }
+
+// ===== STORAGE (IndexedDB) =====
+let db;
+function initDB(){
+  return new Promise(res=>{
+    const req = indexedDB.open('health_v2',1);
+    req.onupgradeneeded = e => {
+      const d = e.target.result;
+      if(!d.objectStoreNames.contains('logs')) d.createObjectStore('logs',{keyPath:'id'});
+    };
+    req.onsuccess = e => { db=e.target.result; res(); };
+    req.onerror = ()=>{ console.error('DB error'); res(); };
+  });
+}
+function dbGet(id){ return new Promise(res=>{ const tx=db.transaction('logs','readonly'); tx.objectStore('logs').get(id).onsuccess=e=>res(e.target.result); }); }
+function dbPut(obj){ return new Promise(res=>{ const tx=db.transaction('logs','readwrite'); tx.objectStore('logs').put(obj).onsuccess=()=>res(); }); }
+function dbAll(){ return new Promise(res=>{ const tx=db.transaction('logs','readonly'); const req=tx.objectStore('logs').getAll(); req.onsuccess=e=>res(e.target.result); }); }
+
+async function getDay(date){
+  const rec = await dbGet(date);
+  return rec || {id:date, weight:null, bodyfat:null, foods:[], exercises:[]};
+}
+async function saveDay(day){ await dbPut(day); }
+
+// ===== STATS =====
+function stats(day){
+  const cal  = day.foods.reduce((s,f)=>s+(f.calories||0),0);
+  const pro  = day.foods.reduce((s,f)=>s+(f.protein||0),0);
+  const fat  = day.foods.reduce((s,f)=>s+(f.fat||0),0);
+  const carb = day.foods.reduce((s,f)=>s+(f.carbs||0),0);
+  const burn = day.exercises.reduce((s,e)=>s+(e.burn||0),0);
+  const net  = cal - burn;
+  const ng   = day.foods.flatMap(f=>f.ng_food||[]).filter(Boolean);
+  return {cal,pro,fat,carb,burn,net,ng};
+}
+
+// ===== TABS =====
+function goTab(id, btn){
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('on'));
+  document.getElementById('v-'+id).classList.add('on');
+  renderAll();
+}
+
+// ===== RENDER =====
+async function renderAll(){
+  updateDateLbl();
+  const day = await getDay(curDate);
+  const s = stats(day);
+  renderToday(day,s);
+  renderFoodLog(day);
+  renderExLog(day);
+  renderWeight(day);
+  await renderHist();
+}
+
+function renderToday(day,s){
+  // Stats
+  document.getElementById('sgrid').innerHTML=`
+    <div class="sbox ${s.cal>P.cal_target?'bad':''}">
+      <div class="sval">${s.cal}</div>
+      <div class="sunit">目標 ${P.cal_target} kcal</div>
+      <div class="slbl">今日熱量</div>
+    </div>
+    <div class="sbox ${s.pro<P.pro_target&&s.cal>0?'gold':''}">
+      <div class="sval">${s.pro}</div>
+      <div class="sunit">目標 ${P.pro_target} g</div>
+      <div class="slbl">蛋白質</div>
+    </div>
+    <div class="sbox">
+      <div class="sval">${s.burn}</div>
+      <div class="sunit">運動消耗</div>
+      <div class="slbl">已燃燒 kcal</div>
+    </div>
+    <div class="sbox ${s.net>P.cal_target?'bad':''}">
+      <div class="sval">${s.net}</div>
+      <div class="sunit">淨攝入</div>
+      <div class="slbl">熱量－運動</div>
+    </div>`;
+
+  // Progress
+  const cp=Math.min(100,Math.round(s.cal/P.cal_target*100));
+  const pp=Math.min(100,Math.round(s.pro/P.pro_target*100));
+  document.getElementById('progs').innerHTML=`
+    <div class="prow"><div class="phdr"><span class="pname">熱量</span><span class="pnum">${s.cal} / ${P.cal_target} kcal</span></div><div class="ptrack"><div class="pfill ${s.cal>P.cal_target?'over':''}" style="width:${cp}%"></div></div></div>
+    <div class="prow"><div class="phdr"><span class="pname">蛋白質</span><span class="pnum">${s.pro} / ${P.pro_target} g</span></div><div class="ptrack"><div class="pfill" style="width:${pp}%"></div></div></div>
+    <div class="prow"><div class="phdr"><span class="pname">脂肪</span><span class="pnum">${s.fat} g</span></div><div class="ptrack"><div class="pfill" style="width:${Math.min(100,s.fat/50*100)}%"></div></div></div>
+    <div class="prow"><div class="phdr"><span class="pname">碳水</span><span class="pnum">${s.carb} g</span></div><div class="ptrack"><div class="pfill" style="width:${Math.min(100,s.carb/150*100)}%"></div></div></div>`;
+
+  // Alerts
+  const alerts=[];
+  const diff=s.net-P.cal_target;
+  if(diff>100){
+    const wk=Math.ceil(diff/4.2), rt=Math.ceil(diff/5.0);
+    alerts.push(`<div class="alert w">🔥 淨熱量超標 <b>${diff} kcal</b><br>快走 <b>${wk} 分鐘</b> 或重訓 <b>${rt} 分鐘</b> 可消耗</div>`);
+  } else if(s.cal>0 && diff<-200){
+    alerts.push(`<div class="alert g">✅ 熱量控制很好！還有 <b>${Math.abs(diff)} kcal</b> 空間</div>`);
+  }
+  const pd=P.pro_target-s.pro;
+  if(pd>10 && s.cal>0){
+    alerts.push(`<div class="alert a">💪 蛋白質還差 <b>${pd}g</b><br>・雞胸肉 150g ≈ 33g<br>・板豆腐一盒 ≈ 20g<br>・無糖希臘優格 ≈ 17g</div>`);
+  }
+  if(day.weight){
+    const toGoal=(day.weight-P.target_w).toFixed(1);
+    if(toGoal>0) alerts.push(`<div class="alert g">⚖️ 距目標 ${P.target_w}kg 還差 <b>${toGoal}kg</b>，繼續加油！</div>`);
+    else alerts.push(`<div class="alert g">🎉 已達成目標體重！</div>`);
+  }
+  const ac=document.getElementById('alertCard');
+  if(alerts.length){ ac.style.display=''; document.getElementById('alertBody').innerHTML=alerts.join(''); }
+  else ac.style.display='none';
+
+  // NG
+  const nc=document.getElementById('ngCard');
+  if(s.ng.length){
+    nc.style.display='';
+    document.getElementById('ngBody').innerHTML=`<div class="alert w">今日已吃：${s.ng.map(n=>`<b>${n}</b>`).join('、')}<br>建議今晚避免精緻糖與油炸食物</div>`;
+  } else nc.style.display='none';
+}
+
+function renderFoodLog(day){
+  const meals=['早餐','午餐','晚餐','點心'];
+  let h='';
+  meals.forEach(m=>{
+    const items=day.foods.filter(f=>f.meal===m);
+    if(!items.length) return;
+    const tot=items.reduce((s,f)=>s+(f.calories||0),0);
+    h+=`<div class="meal-hdr"><span class="mname">${m}</span><span class="mkcal">${tot} kcal</span></div>`;
+    items.forEach(f=>{
+      const gi=day.foods.indexOf(f);
+      const isNg=f.ng_food&&f.ng_food.length>0;
+      h+=`<div class="fitem ${isNg?'ng':''}"><span class="fname">${f.name||'食物'}${isNg?`<span class="ng-tag">NG</span>`:''}</span><span class="fkcal">${f.calories} kcal</span><button class="fdel" onclick="delFood(${gi})">×</button></div>`;
+    });
+  });
+  document.getElementById('foodLog').innerHTML=h||'<div class="empty"><div class="eico">🍱</div>尚無飲食紀錄<br>可匯入 Gem 資料或手動新增</div>';
+}
+
+function renderExLog(day){
+  let h='';
+  day.exercises.forEach((e,i)=>{
+    h+=`<div class="eitem"><span class="fname">🏃 ${e.name} ${e.minutes}分鐘</span><span class="fkcal" style="color:var(--gold)">-${e.burn} kcal</span><button class="fdel" onclick="delEx(${i})">×</button></div>`;
+  });
+  document.getElementById('exLog').innerHTML=h||'<div class="empty"><div class="eico">🏃</div>尚無運動紀錄</div>';
+}
+
+function renderWeight(day){
+  const el=document.getElementById('wDisplay');
+  if(day.weight){
+    el.innerHTML=`<div class="wbig"><span class="wnum">${day.weight}</span><span class="wunit">kg</span></div>
+    <div style="font-size:13px;color:var(--ink3)">距目標 ${P.target_w}kg 還差 <b style="color:var(--g1)">${Math.max(0,(day.weight-P.target_w).toFixed(1))}kg</b></div>
+    ${day.bodyfat?`<div style="font-size:12px;color:var(--ink3);margin-top:3px">體脂率：${day.bodyfat}%</div>`:''}`;
+  } else {
+    el.innerHTML='<div class="empty"><div class="eico">⚖️</div>尚未記錄體重</div>';
+  }
+  // Trend
+  const trend=document.getElementById('wTrend');
+  const entries=last14().map(d=>({d,w:null}));
+  const loadTrend=async()=>{
+    for(const e of entries){ const r=await dbGet(e.d); if(r&&r.weight) e.w=r.weight; }
+    const valid=entries.filter(e=>e.w);
+    if(valid.length<2){ trend.innerHTML='<div class="empty" style="padding:14px">累積更多紀錄後顯示趨勢</div>'; return; }
+    const max=Math.max(...valid.map(e=>e.w)), min=Math.min(...valid.map(e=>e.w)), rng=max-min||1;
+    let h='';
+    valid.forEach(e=>{
+      const o=new Date(e.d+'T12:00:00');
+      const pct=((e.w-min)/rng*60+20);
+      h+=`<div class="titem"><div class="tdate">${o.getMonth()+1}/${o.getDate()}</div><div class="tbar"><div class="tbarfill" style="width:${pct}%"></div></div><div class="tw">${e.w}kg</div></div>`;
+    });
+    trend.innerHTML=h;
+  };
+  loadTrend();
+}
+
+async function renderHist(){
+  const all=await dbAll();
+  const map={};
+  all.forEach(r=>map[r.id]=r);
+  const dates=last14().reverse();
+  let h='';
+  dates.forEach(d=>{
+    const day=map[d];
+    if(!day) return;
+    const s=stats(day);
+    if(s.cal===0&&!day.weight) return;
+    const o=new Date(d+'T12:00:00');
+    const pct=Math.min(100,s.cal/P.cal_target*100);
+    h+=`<div class="hitem" onclick="curDate='${d}';goTabById('today')">
+      <div class="hdate">${o.getMonth()+1}/${o.getDate()}</div>
+      <div class="hbars">
+        <div class="minibar"><div class="minifill ${s.cal>P.cal_target?'over':''}" style="width:${pct}%"></div></div>
+        ${day.weight?`<div style="font-size:10px;color:var(--ink3)">⚖️ ${day.weight}kg</div>`:''}
+      </div>
+      <div class="hkcal">${s.cal} kcal</div>
+    </div>`;
+  });
+  document.getElementById('histList').innerHTML=h||'<div class="empty"><div class="eico">📈</div>累積幾天後顯示趨勢</div>';
+}
+
+function goTabById(id){
+  const btns=document.querySelectorAll('.nav-btn');
+  const ids=['today','import','food','move','weight','hist'];
+  const i=ids.indexOf(id);
+  if(i>=0){ goTab(id,btns[i]); updateDateLbl(); }
+}
+
+// ===== IMPORT =====
+function focusImport(){ document.getElementById('gemTx').focus(); }
+
+function parseRecord(text){
+  // Find ===RECORD=== and extract JSON after it
+  const marker = text.indexOf('===RECORD===');
+  if(marker===-1) return null;
+  const after = text.slice(marker+12);
+  const jMatch = after.match(/\{[\s\S]*?\}/);
+  if(!jMatch) return null;
+  try{ return JSON.parse(jMatch[0]); }
+  catch{ return null; }
+}
+
+async function doImport(){
+  const raw=document.getElementById('gemTx').value.trim();
+  if(!raw){ toast('請貼上 Gem 回覆內容'); return; }
+  const data=parseRecord(raw);
+  if(!data){ toast('找不到 ===RECORD=== 或 JSON 格式有誤'); return; }
+  const day=await getDay(curDate);
+  if(data.type==='food'){
+    day.foods.push({
+      meal: data.meal||'其他',
+      name: Array.isArray(data.items)?data.items.join('、'):(data.name||'食物'),
+      calories: data.calories||0,
+      protein: data.protein||0,
+      fat: data.fat||0,
+      carbs: data.carbs||0,
+      ng_food: data.ng_food||[],
+      time: data.datetime||new Date().toISOString()
+    });
+    await saveDay(day);
+    document.getElementById('gemTx').value='';
+    toast(`✅ 已記錄 ${data.meal||'食物'}：${data.calories} kcal`);
+    renderAll();
+  } else if(data.type==='exercise'){
+    const rate=P.ex_rate[data.name]||4.2;
+    const burn=data.burn||Math.round(rate*(data.minutes||0));
+    day.exercises.push({name:data.name,minutes:data.minutes,burn});
+    await saveDay(day);
+    document.getElementById('gemTx').value='';
+    toast(`✅ ${data.name} ${data.minutes}分鐘，消耗 ${burn} kcal`);
+    renderAll();
+  } else if(data.type==='weight'){
+    day.weight=data.weight;
+    if(data.bodyfat) day.bodyfat=data.bodyfat;
+    await saveDay(day);
+    document.getElementById('gemTx').value='';
+    toast(`✅ 體重 ${data.weight} kg 已記錄`);
+    renderAll();
+  } else {
+    toast('未知 type，支援：food / exercise / weight');
+  }
+}
+
+// live preview
+document.addEventListener('DOMContentLoaded',()=>{
+  document.getElementById('gemTx').addEventListener('input',function(){
+    const data=parseRecord(this.value);
+    const hint=document.getElementById('parseHint');
+    if(data) hint.textContent=`✓ 偵測到：${data.type}${data.type==='food'?` ${data.meal||''} ${data.calories||0}kcal`:data.type==='weight'?` ${data.weight}kg`:` ${data.name} ${data.minutes}min`}`;
+    else if(this.value.length>10) hint.textContent='尚未偵測到 ===RECORD===';
+    else hint.textContent='';
+  });
+
+  // Exercise preview
+  const exMin=document.getElementById('exMin');
+  const exType=document.getElementById('exType');
+  const upEx=()=>{
+    const m=parseFloat(exMin.value), t=exType.value;
+    if(m>0) document.getElementById('exPreview').textContent=`預估消耗 ${Math.round((P.ex_rate[t]||4.2)*m)} kcal`;
+    else document.getElementById('exPreview').textContent='';
+  };
+  exMin.addEventListener('input',upEx);
+  exType.addEventListener('change',upEx);
+});
+
+// ===== MANUAL ADD =====
+async function addFoodManual(){
+  const name=document.getElementById('fName').value.trim();
+  const cal=parseFloat(document.getElementById('fCal').value)||0;
+  if(!name||!cal){ toast('請填寫食物名稱和熱量'); return; }
+  const day=await getDay(curDate);
+  day.foods.push({
+    meal:document.getElementById('mealSel').value,
+    name,calories:cal,
+    protein:parseFloat(document.getElementById('fPro').value)||0,
+    fat:parseFloat(document.getElementById('fFat').value)||0,
+    carbs:parseFloat(document.getElementById('fCarb').value)||0,
+    ng_food:[],time:new Date().toISOString()
+  });
+  await saveDay(day);
+  ['fName','fCal','fPro','fFat','fCarb'].forEach(id=>document.getElementById(id).value='');
+  toast('✅ 已新增'); renderAll();
+}
+
+async function delFood(i){
+  if(!confirm('確定刪除？')) return;
+  const day=await getDay(curDate);
+  day.foods.splice(i,1);
+  await saveDay(day); renderAll();
+}
+
+async function addEx(){
+  const m=parseFloat(document.getElementById('exMin').value);
+  if(!m||m<=0){ toast('請輸入運動時間'); return; }
+  const t=document.getElementById('exType').value;
+  const burn=Math.round((P.ex_rate[t]||4.2)*m);
+  const day=await getDay(curDate);
+  day.exercises.push({name:t,minutes:m,burn});
+  await saveDay(day);
+  document.getElementById('exMin').value='';
+  document.getElementById('exPreview').textContent='';
+  toast(`✅ ${t} ${m}分鐘，-${burn} kcal`); renderAll();
+}
+
+async function delEx(i){
+  if(!confirm('確定刪除？')) return;
+  const day=await getDay(curDate);
+  day.exercises.splice(i,1);
+  await saveDay(day); renderAll();
+}
+
+async function saveW(){
+  const w=parseFloat(document.getElementById('wIn').value);
+  if(!w||w<20||w>200){ toast('請輸入正確體重'); return; }
+  const bf=parseFloat(document.getElementById('bfIn').value)||null;
+  const day=await getDay(curDate);
+  day.weight=w; if(bf) day.bodyfat=bf;
+  await saveDay(day);
+  document.getElementById('wIn').value='';
+  document.getElementById('bfIn').value='';
+  toast(`✅ 體重 ${w}kg 已儲存`); renderAll();
+}
+
+// ===== TOAST =====
+let toastTimer;
+function toast(msg){
+  const el=document.getElementById('toast');
+  el.textContent=msg; el.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer=setTimeout(()=>el.classList.remove('show'),2500);
+}
+
+// ===== INIT =====
+initDB().then(()=>{ updateDateLbl(); renderAll(); });
+</script>
+</body>
+</html>
