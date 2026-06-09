@@ -386,6 +386,8 @@ function goTab(id, btn){
   document.querySelectorAll('.view').forEach(v=>v.classList.remove('on'));
   document.getElementById('v-'+id).classList.add('on');
   renderAll();
+  // Auto focus textarea when switching to import tab
+  if(id==='import') setTimeout(()=>document.getElementById('gemTx').focus(), 100);
 }
 
 // ===== RENDER =====
@@ -581,23 +583,26 @@ async function doImport(){
     });
     await saveDay(day);
     document.getElementById('gemTx').value='';
+    document.getElementById('parseHint').textContent='';
     toast(`✅ 已記錄 ${data.meal||'食物'}：${data.calories} kcal`);
-    renderAll();
+    setTimeout(()=>goTabById('today'), 600);
   } else if(data.type==='exercise'){
     const rate=P.ex_rate[data.name]||4.2;
     const burn=data.burn||Math.round(rate*(data.minutes||0));
     day.exercises.push({name:data.name,minutes:data.minutes,burn});
     await saveDay(day);
     document.getElementById('gemTx').value='';
+    document.getElementById('parseHint').textContent='';
     toast(`✅ ${data.name} ${data.minutes}分鐘，消耗 ${burn} kcal`);
-    renderAll();
+    setTimeout(()=>goTabById('today'), 600);
   } else if(data.type==='weight'){
     day.weight=data.weight;
     if(data.bodyfat) day.bodyfat=data.bodyfat;
     await saveDay(day);
     document.getElementById('gemTx').value='';
+    document.getElementById('parseHint').textContent='';
     toast(`✅ 體重 ${data.weight} kg 已記錄`);
-    renderAll();
+    setTimeout(()=>goTabById('today'), 600);
   } else {
     toast('未知 type，支援：food / exercise / weight');
   }
