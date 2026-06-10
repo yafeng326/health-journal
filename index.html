@@ -558,7 +558,7 @@ function parseRecord(text){
   const marker = text.indexOf('===RECORD===');
   if(marker===-1) return null;
   const after = text.slice(marker+12);
-  const jMatch = after.match(/\{[\s\S]*?\}/);
+  const jMatch = after.match(/\{[\s\S]*\}/);
   if(!jMatch) return null;
   try{ return JSON.parse(jMatch[0]); }
   catch{ return null; }
