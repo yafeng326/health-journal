@@ -324,7 +324,16 @@ const P = {
 
 // ===== DATE =====
 let curDate = today();
-function today(){ return new Date().toISOString().slice(0,10) }
+
+function today(){
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+
+function localDateStr(dateObj){
+  return `${dateObj.getFullYear()}-${String(dateObj.getMonth()+1).padStart(2,'0')}-${String(dateObj.getDate()).padStart(2,'0')}`;
+}
+
 function fmtDate(d){
   const o = new Date(d+'T12:00:00');
   const days=['日','一','二','三','四','五','六'];
@@ -332,9 +341,28 @@ function fmtDate(d){
   const tag = d===t?' · 今天':d===yd?' · 昨天':'';
   return `${o.getMonth()+1}/${o.getDate()}（${days[o.getDay()]}）${tag}`;
 }
-function prevDay(d){ const o=new Date(d+'T12:00:00'); o.setDate(o.getDate()-1); return o.toISOString().slice(0,10) }
-function addDays(d,n){ const o=new Date(d+'T12:00:00'); o.setDate(o.getDate()+n); return o.toISOString().slice(0,10) }
-function last14(){ const r=[]; let d=today(); for(let i=0;i<14;i++){ r.unshift(d); d=prevDay(d); } return r }
+
+function prevDay(d){
+  const o = new Date(d+'T12:00:00');
+  o.setDate(o.getDate()-1);
+  return localDateStr(o);
+}
+
+function addDays(d,n){
+  const o = new Date(d+'T12:00:00');
+  o.setDate(o.getDate()+n);
+  return localDateStr(o);
+}
+
+function last14(){
+  const r=[];
+  let d=today();
+  for(let i=0;i<14;i++){
+    r.unshift(d);
+    d=prevDay(d);
+  }
+  return r;
+}
 
 function changeDay(n){
   const next = addDays(curDate,n);
@@ -386,7 +414,6 @@ function goTab(id, btn){
   document.querySelectorAll('.view').forEach(v=>v.classList.remove('on'));
   document.getElementById('v-'+id).classList.add('on');
   renderAll();
-  // Auto focus textarea when switching to import tab
   if(id==='import') setTimeout(()=>document.getElementById('gemTx').focus(), 100);
 }
 
@@ -403,7 +430,6 @@ async function renderAll(){
 }
 
 function renderToday(day,s){
-  // Stats
   document.getElementById('sgrid').innerHTML=`
     <div class="sbox ${s.cal>P.cal_target?'bad':''}">
       <div class="sval">${s.cal}</div>
@@ -426,7 +452,6 @@ function renderToday(day,s){
       <div class="slbl">熱量－運動</div>
     </div>`;
 
-  // Progress
   const cp=Math.min(100,Math.round(s.cal/P.cal_target*100));
   const pp=Math.min(100,Math.round(s.pro/P.pro_target*100));
   document.getElementById('progs').innerHTML=`
@@ -435,7 +460,6 @@ function renderToday(day,s){
     <div class="prow"><div class="phdr"><span class="pname">脂肪</span><span class="pnum">${s.fat} g</span></div><div class="ptrack"><div class="pfill" style="width:${Math.min(100,s.fat/50*100)}%"></div></div></div>
     <div class="prow"><div class="phdr"><span class="pname">碳水</span><span class="pnum">${s.carb} g</span></div><div class="ptrack"><div class="pfill" style="width:${Math.min(100,s.carb/150*100)}%"></div></div></div>`;
 
-  // Alerts
   const alerts=[];
   const diff=s.net-P.cal_target;
   if(diff>100){
@@ -457,7 +481,6 @@ function renderToday(day,s){
   if(alerts.length){ ac.style.display=''; document.getElementById('alertBody').innerHTML=alerts.join(''); }
   else ac.style.display='none';
 
-  // NG
   const nc=document.getElementById('ngCard');
   if(s.ng.length){
     nc.style.display='';
@@ -499,7 +522,6 @@ function renderWeight(day){
   } else {
     el.innerHTML='<div class="empty"><div class="eico">⚖️</div>尚未記錄體重</div>';
   }
-  // Trend
   const trend=document.getElementById('wTrend');
   const entries=last14().map(d=>({d,w:null}));
   const loadTrend=async()=>{
@@ -554,7 +576,6 @@ function goTabById(id){
 function focusImport(){ document.getElementById('gemTx').focus(); }
 
 function parseRecord(text){
-  // Find ===RECORD=== and extract JSON after it
   const marker = text.indexOf('===RECORD===');
   if(marker===-1) return null;
   const after = text.slice(marker+12);
@@ -618,7 +639,6 @@ document.addEventListener('DOMContentLoaded',()=>{
     else hint.textContent='';
   });
 
-  // Exercise preview
   const exMin=document.getElementById('exMin');
   const exType=document.getElementById('exType');
   const upEx=()=>{
